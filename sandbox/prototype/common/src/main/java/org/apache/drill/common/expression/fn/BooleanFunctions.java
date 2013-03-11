@@ -26,6 +26,9 @@ import org.apache.drill.common.expression.types.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BooleanFunctions implements CallProvider {
   static final Logger logger = LoggerFactory.getLogger(BooleanFunctions.class);
 
@@ -42,6 +45,19 @@ public class BooleanFunctions implements CallProvider {
 
   }
 
+    //wcl
+    public static FunctionDefinition getFunctionDefintion(String name){
 
+        Map<String, Integer> funtionMap = new HashMap<String,Integer>();
+        funtionMap.put("or",0);
+        funtionMap.put("and",1);
+        funtionMap.put("greater than",2);
+        funtionMap.put("less than",3);
+        funtionMap.put("equal",4);
+        funtionMap.put("greater than or equal to",5);
+        funtionMap.put("less than or equal to",6);
+
+        return new BooleanFunctions().getFunctionDefintions()[funtionMap.get(name)];
+    }
 
 }
