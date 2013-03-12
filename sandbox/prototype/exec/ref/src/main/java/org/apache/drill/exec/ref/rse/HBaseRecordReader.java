@@ -1,7 +1,5 @@
 package org.apache.drill.exec.ref.rse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.exec.ref.RecordIterator;
 import org.apache.drill.exec.ref.RecordPointer;
@@ -14,6 +12,8 @@ import org.apache.drill.exec.ref.values.SimpleMapValue;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.regionserver.TableScanner;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -28,7 +28,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class HBaseRecordReader implements RecordReader {
-    private static Log LOG = LogFactory.getLog(HBaseRecordReader.class);
+    private static Logger LOG = LoggerFactory.getLogger(HBaseRecordReader.class);
 
     private String startDate;
     private String endDate;
