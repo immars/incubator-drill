@@ -61,7 +61,7 @@ public class HBaseRecordReader implements RecordReader {
         this.parent = parent;
         this.rootPath = rootPath;
         String event = l0 + ".*";
-        String nextEvent = getNextEvent(event) + ".*";
+        String nextEvent = getNextEvent(l0) + ".*";
         String tableName = getTableName(rootPath);
         try {
             for (String date=startDate; compareDate(date, endDate)<=0; date=calDay(date, 1)) {
