@@ -22,6 +22,9 @@ import org.apache.drill.common.expression.CallProvider;
 import org.apache.drill.common.expression.FunctionDefinition;
 import org.apache.drill.common.expression.OutputTypeDeterminer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AggregationFunctions implements CallProvider {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AggregationFunctions.class);
 
@@ -32,4 +35,13 @@ public class AggregationFunctions implements CallProvider {
         FunctionDefinition.aggregator("sum",  new AnyTypeAllowed(1), new OutputTypeDeterminer.SameAsFirstInput())
     };
   }
+    //wcl
+    public static FunctionDefinition getFunctionDefintion(String name){
+
+        Map<String, Integer> funtionMap = new HashMap<String,Integer>();
+        funtionMap.put("count",0);
+        funtionMap.put("sum",1);
+
+        return new AggregationFunctions().getFunctionDefintions()[funtionMap.get(name)];
+    }
 }
