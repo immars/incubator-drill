@@ -97,7 +97,6 @@ public class MysqlRecordReader implements RecordReader{
 
         @Override
         public NextOutcome next() {
-
             try {
                 if (rs == null) {
                     executeQuery();
@@ -114,6 +113,7 @@ public class MysqlRecordReader implements RecordReader{
                             dv = new ScalarValues.IntegerScalar(innerUid);
                             dataValue.setByName(columnName, dv);
                         } else {
+                            columnName = rsMetaData.getTableName(columnIndex) ;
                             Object value = rs.getObject(columnIndex);
 
                             if (value instanceof String)
