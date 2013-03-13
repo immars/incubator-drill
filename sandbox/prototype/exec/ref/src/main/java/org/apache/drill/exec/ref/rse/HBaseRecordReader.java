@@ -220,7 +220,7 @@ public class HBaseRecordReader implements RecordReader {
     }
 
     public String getTableName(SchemaPath rootPath) {
-        return rootPath.getPath().toString().replace("xadrill1", "_");
+        return rootPath.getPath().toString().replace("xadrill1", "-");
     }
 
     public String calDay(String date, int dis) throws ParseException {
