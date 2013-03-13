@@ -103,8 +103,9 @@ public class HBaseRecordReader implements RecordReader {
                     hasMore = scanner.next(curRes);
                     valIndex = 0;
                 }
-               // System.out.println("curRes size:"+curRes.size());
-                if (valIndex >= curRes.size()) {
+
+                if (valIndex > curRes.size()-1) {
+
                     if (hasMore) {
                         /* Get result list from the same scanner */
                         TableScanner scanner = scanners.get(currentScannerIndex);
@@ -114,9 +115,7 @@ public class HBaseRecordReader implements RecordReader {
                     } else {
                         /* Get result list from another scanner */
                         currentScannerIndex++;
-                        System.out.println(Math.random());
-                        System.out.println(currentScannerIndex);
-                        if (currentScannerIndex >= scanners.size()) {
+                        if (currentScannerIndex > scanners.size()-1) {
                             /* Already reached the last one */
                             System.out.println("No more scanner left...");
                             LOG.info("No more scanner left...");
