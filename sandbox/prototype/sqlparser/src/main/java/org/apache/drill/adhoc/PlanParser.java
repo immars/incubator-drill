@@ -97,6 +97,7 @@ public class PlanParser {
         IteratorRegistry ir = new IteratorRegistry();
         ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
         System.out.println(logicalPlan.toJsonString(config));
+        logicalPlan.getGraph().getAdjList().printEdges();
         i.setup();
         Collection<RunOutcome> outcomes = i.run();
 
