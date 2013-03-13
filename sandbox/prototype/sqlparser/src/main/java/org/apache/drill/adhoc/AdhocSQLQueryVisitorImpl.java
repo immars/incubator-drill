@@ -84,7 +84,7 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
         String distinct = null;
         List<SelectItem> selectItems = plainSelect.getSelectItems();
         List<LogicalExpression> selectItemlogicalExpressions = new ArrayList<LogicalExpression>();
-        for (SelectItem selectItem : selectItems) {
+        for(SelectItem selectItem : selectItems) {
             AdhocSelectItemVisitorImpl selectItemVisitor = new AdhocSelectItemVisitorImpl();
             selectItem.accept(selectItemVisitor);
             LogicalExpression logicalExpression = selectItemVisitor.getLogicalExpr();
@@ -248,7 +248,8 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
     private Store getStore(){
         try{
             ObjectMapper mapper = new ObjectMapper();
-            return new Store("console", mapper.readValue(new String("{\"pipe\":\"STD_OUT\"}").getBytes(),JSONOptions.class), null);
+            //return new Store("console", mapper.readValue(new String("{\"pipe\":\"STD_OUT\"}").getBytes(),JSONOptions.class), null);
+            return new Store("fs", mapper.readValue(new String("{\"file\":\"/home/hadoop/scan_result\", \"type\":\"JSON\"}").getBytes(),JSONOptions.class), null);
         }catch (Exception e){
             //todo wcl
             return null;

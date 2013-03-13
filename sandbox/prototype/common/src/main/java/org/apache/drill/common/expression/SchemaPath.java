@@ -75,7 +75,7 @@ public class SchemaPath extends LogicalExpressionBase{
   
   
 	public SchemaPath(CharSequence str) {
-	  if(!ENTIRE_PATTERN.matcher(str).matches()) throw new IllegalArgumentException("Identifier doesn't match expected pattern.");
+	  //if(!ENTIRE_PATTERN.matcher(str).matches()) throw new IllegalArgumentException("Identifier doesn't match expected pattern.");//wcl
 	  this.originalPath = str;
 	  Matcher m = SEGMENT_PATTERN.matcher(str);
 		PathSegment r = null;
@@ -133,8 +133,22 @@ public class SchemaPath extends LogicalExpressionBase{
   public String toString() {
     return "SchemaPath [rootSegment=" + rootSegment + "]";
   }
-  
-  
+
+    public static void main(String[] args) throws Exception{
+        SchemaPath schemaPath = new SchemaPath("sof-dsk_deu");
+        Matcher m = SEGMENT_PATTERN.matcher("sof-dsk_deu");
+        m.find();
+        int i = m.start(GROUP_COLLISION);
+        String string = m.group(GROUP_COLLISION);
+        String xx = m.group(GROUP_PATH_SEGMENT);
+
+        i = m.start(GROUP_INDEX);
+        xx = m.group(GROUP_INDEX);
+
+        xx = m.group(GROUP_PATH_SEGMENT);
+
+        System.out.println("xx");
+    }
   
 
 }
