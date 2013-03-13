@@ -67,8 +67,10 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
     OutcomeType outcome = OutcomeType.FAILED;
     long pos = -1; 
     try{
+        long xx=0;
     while(true){
       boolean more = true;
+        recordCount = 0; //wcl
       for(;recordCount < runsize; recordCount++){
         NextOutcome r = iter.next();
         if(r == NextOutcome.NONE_LEFT){
@@ -90,12 +92,11 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
       }else{
         logger.debug("No problems, doing next progress iteration.");
       }
-      
     }
     }catch(Exception e){
       exception = e ;
     }
-    
+    System.out.println(recordCount);//wcl
     cleanup(outcome);
     return new RunOutcome(outcome, pos, recordCount, exception);
     
