@@ -176,7 +176,7 @@ public class HBaseRecordReader implements RecordReader {
         map.setByName("value", valDV);
         /* Set event name */
         String event = getEventFromDEURowKey(rk);
-        String[] fields = event.split(".");
+        String[] fields = event.split("\\.");
         int i = 0;
         for (;i<fields.length;i++) {
             String name = fields[i];
