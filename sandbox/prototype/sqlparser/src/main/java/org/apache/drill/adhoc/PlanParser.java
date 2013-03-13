@@ -3,6 +3,7 @@ package org.apache.drill.adhoc;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.drill.common.config.DrillConfig;
+import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.common.logical.LogicalPlan;
 import org.apache.drill.common.logical.OperatorGraph;
 import org.apache.drill.common.logical.PlanProperties;
@@ -18,11 +19,14 @@ import org.apache.drill.exec.ref.ReferenceInterpreter;
 import org.apache.drill.exec.ref.RunOutcome;
 import org.apache.drill.exec.ref.eval.BasicEvaluatorFactory;
 import org.apache.drill.exec.ref.rse.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,6 +36,8 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class PlanParser {
+
+    //static final Logger logger = LoggerFactory.getLogger(RunSimplePlan.class);
     private CCJSqlParserManager pm = new CCJSqlParserManager();
     private static PlanParser instance = new PlanParser();
 
@@ -67,15 +73,33 @@ public class PlanParser {
         return plan;
     }
 
+    public static void test(){
+        SchemaPath schemaPath = new SchemaPath("sof-dsk_deu");
+
+
+    }
     public static void main(String[] args) throws Exception{
+        //logger.info("xxx");
         DrillConfig config = DrillConfig.create();
-        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (deu INNER JOIN deu ON fix_sof.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='2013-01-02'\n");
-        logicalPlan.getGraph().getAdjList().printEdges();
+//        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (deu INNER JOIN deu ON fix_sof.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='2013-01-02'\n");
+//        logicalPlan.getGraph().getAdjList().printEdges();
 //        IteratorRegistry ir = new IteratorRegistry();
 //        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
 //        System.out.println(logicalPlan.toJsonString(config));
 //        i.setup();
 //        Collection<RunOutcome> outcomes = i.run();
+
+        //System.out.println(String.format("%1$s%1$s","a"));
+        String sql= new String("Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='2013-01-02'").replace("-","xadrill");
+        //String sql = new String("Select sof-dsk_deu.uid from sof-dsk_deu where sof-dsk_deu.date<'20130101' and sof-dsk_deu.date>'20130101' and sof-dsk_deu.l0='visit'").replace("-","xadrill");
+        //String sql = "Select tencentxadrill18894_deu.uid from tencentxadrill18894_deu";
+        LogicalPlan logicalPlan = new PlanParser().parse(sql);
+        IteratorRegistry ir = new IteratorRegistry();
+        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
+        System.out.println(logicalPlan.toJsonString(config));
+        logicalPlan.getGraph().getAdjList().printEdges();
+        i.setup();
+        Collection<RunOutcome> outcomes = i.run();
 
     }
 }

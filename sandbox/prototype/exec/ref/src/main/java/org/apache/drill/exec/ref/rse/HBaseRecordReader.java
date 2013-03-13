@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import org.apache.drill.exec.ref.ReferenceInterpreter;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,7 +29,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class HBaseRecordReader implements RecordReader {
-    private static Logger LOG = LoggerFactory.getLogger(HBaseRecordReader.class);
+    private static Logger LOG = LoggerFactory.getLogger(ReferenceInterpreter.class);
 
     private String startDate;
     private String endDate;
@@ -49,6 +50,8 @@ public class HBaseRecordReader implements RecordReader {
     private SchemaPath rootPath;
     private UnbackedRecord record = new UnbackedRecord();
 
+    private  long wclCount = 0;
+
 
     public HBaseRecordReader(String startDate, String endDate, String l0, String l1, String l2, String l3, String l4, ROP parent, SchemaPath rootPath) {
         this.startDate = startDate;
@@ -68,6 +71,7 @@ public class HBaseRecordReader implements RecordReader {
                 String srk = date + event;
                 String erk = date + nextEvent;
                 LOG.info("Begin to init scanner for Start row key: " + srk + " End row key: " + erk + " Table name: " + tableName);
+                System.out.println("Begin to init scanner for Start row key: " + srk + " End row key: " + erk + " Table name: " + tableName);
                 TableScanner scanner = new TableScanner(srk, erk, tableName, false, false);
                 scanners.add(scanner);
             }
@@ -99,7 +103,7 @@ public class HBaseRecordReader implements RecordReader {
                     hasMore = scanner.next(curRes);
                     valIndex = 0;
                 }
-
+               // System.out.println("curRes size:"+curRes.size());
                 if (valIndex >= curRes.size()) {
                     if (hasMore) {
                         /* Get result list from the same scanner */
@@ -110,11 +114,16 @@ public class HBaseRecordReader implements RecordReader {
                     } else {
                         /* Get result list from another scanner */
                         currentScannerIndex++;
-                        if (currentScannerIndex > scanners.size()) {
+                        System.out.println(Math.random());
+                        System.out.println(currentScannerIndex);
+                        if (currentScannerIndex >= scanners.size()) {
                             /* Already reached the last one */
+                            System.out.println("No more scanner left...");
                             LOG.info("No more scanner left...");
                             return NextOutcome.NONE_LEFT;
+
                         } else {
+                            System.out.println("Get data from next scanner...");
                             LOG.info("Get data from next scanner...");
                             TableScanner scanner = scanners.get(currentScannerIndex);
                             curRes.clear();
@@ -123,7 +132,6 @@ public class HBaseRecordReader implements RecordReader {
                         }
                     }
                 }
-
                 KeyValue kv = curRes.get(valIndex++);
                 record.setClearAndSetRoot(rootPath, convert(kv));
                 return NextOutcome.INCREMENTED_SCHEMA_CHANGED;
@@ -162,6 +170,7 @@ public class HBaseRecordReader implements RecordReader {
 
 
     public DataValue convert(KeyValue kv) {
+
         SimpleMapValue map = new SimpleMapValue();
         byte[] rk = kv.getRow();
 
@@ -193,6 +202,7 @@ public class HBaseRecordReader implements RecordReader {
         map.setByName("ts", tsDV);
 
         LOG.info(map.toString());
+        //System.out.println(innerUid+"\t"+eventVal+"\t"+ts);
         return map;
     }
 
@@ -220,7 +230,7 @@ public class HBaseRecordReader implements RecordReader {
     }
 
     public String getTableName(SchemaPath rootPath) {
-        return rootPath.getPath().toString().replace("xadrill1", "-");
+        return rootPath.getPath().toString().replace("xadrill", "-");
     }
 
     public String calDay(String date, int dis) throws ParseException {
@@ -281,5 +291,9 @@ public class HBaseRecordReader implements RecordReader {
         StringBuilder endEvent = new StringBuilder(eventFilter);
         endEvent.setCharAt(eventFilter.length() - 1, (char) (endEvent.charAt(eventFilter.length() - 1) + 1));
         return endEvent.toString();
+    }
+
+    public static void main(String[] args) throws Exception{
+        //HBaseRecordReader hBaseRecordReader = new HBaseRecordReader();
     }
 }

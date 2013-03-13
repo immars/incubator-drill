@@ -61,22 +61,24 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
         SingleInputOperator filter = null;
         if(whereExpr!=null){
             filter = new Filter(whereExpr);
-            if (fromLop instanceof Join) {
-                LogicalOperator sourceLeft = ((Join) fromLop).getLeft();
-                filter.setInput(sourceLeft);
-
-                LogicalOperator sourceRight = ((Join) fromLop).getRight();
-                Filter filter2 = new Filter(whereExpr);
-                filter2.setInput(sourceRight);
-
-                ((Join) fromLop).setLeft(filter);
-                ((Join) fromLop).setRight(filter2);
-                logicalOperators.add(filter2);
-                logicalOperators.add(filter);
-            } else {
-                filter.setInput(fromLop);
-                logicalOperators.add(filter);
-            }
+            filter.setInput(fromLop);
+            logicalOperators.add(filter);
+//            if (fromLop instanceof Join) {
+//                LogicalOperator sourceLeft = ((Join) fromLop).getLeft();
+//                filter.setInput(sourceLeft);
+//
+//                LogicalOperator sourceRight = ((Join) fromLop).getRight();
+//                Filter filter2 = new Filter(whereExpr);
+//                filter2.setInput(sourceRight);
+//
+//                ((Join) fromLop).setLeft(filter);
+//                ((Join) fromLop).setRight(filter2);
+//                logicalOperators.add(filter2);
+//                logicalOperators.add(filter);
+//            } else {
+//                filter.setInput(fromLop);
+//                logicalOperators.add(filter);
+//            }
         }
 
         //Get select item expressions
@@ -84,7 +86,7 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
         String distinct = null;
         List<SelectItem> selectItems = plainSelect.getSelectItems();
         List<LogicalExpression> selectItemlogicalExpressions = new ArrayList<LogicalExpression>();
-        for (SelectItem selectItem : selectItems) {
+        for(SelectItem selectItem : selectItems) {
             AdhocSelectItemVisitorImpl selectItemVisitor = new AdhocSelectItemVisitorImpl();
             selectItem.accept(selectItemVisitor);
             LogicalExpression logicalExpression = selectItemVisitor.getLogicalExpr();
@@ -147,10 +149,10 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
         if (collapsingAggregate!=null){
             if(segment !=null){
                 collapsingAggregate.setInput(segment);
-            }else if (fromLop !=null){
-                collapsingAggregate.setInput(fromLop);
-            }else{
+            }else if (filter !=null){
                 collapsingAggregate.setInput(filter);
+            }else{
+                collapsingAggregate.setInput(fromLop);
             }
             logicalOperators.add(collapsingAggregate);
         }
@@ -248,7 +250,8 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
     private Store getStore(){
         try{
             ObjectMapper mapper = new ObjectMapper();
-            return new Store("console", mapper.readValue(new String("{\"pipe\":\"STD_OUT\"}").getBytes(),JSONOptions.class), null);
+            //return new Store("console", mapper.readValue(new String("{\"pipe\":\"STD_OUT\"}").getBytes(),JSONOptions.class), null);
+            return new Store("fs", mapper.readValue(new String("{\"file\":\"/home/hadoop/scan_result\", \"type\":\"JSON\"}").getBytes(),JSONOptions.class), null);
         }catch (Exception e){
             //todo wcl
             return null;
