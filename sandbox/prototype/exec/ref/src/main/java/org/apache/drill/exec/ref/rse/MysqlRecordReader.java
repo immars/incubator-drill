@@ -140,12 +140,9 @@ public class MysqlRecordReader implements RecordReader{
 
             return parent;
         }
-
         public int getInnerUidFromSamplingUid(long suid) {
             return (int) (0xffffffffl & suid);
         }
-
-
     }
 
     public static void main(String[] args){
@@ -156,9 +153,11 @@ public class MysqlRecordReader implements RecordReader{
         System.out.println("start") ;
         RecordIterator recordIterator = rr.getIterator() ;
 
+        RecordPointer record = null;
         while (recordIterator.next()  != RecordIterator.NextOutcome.NONE_LEFT)
         {
-           System.out.println( recordIterator.getRecordPointer().toString()) ;
+           record =  recordIterator.getRecordPointer() ;
+            System.out.println("ok") ;
         }
 
         System.out.println("end") ;
