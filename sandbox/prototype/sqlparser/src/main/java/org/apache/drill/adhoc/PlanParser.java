@@ -69,12 +69,13 @@ public class PlanParser {
 
     public static void main(String[] args) throws Exception{
         DrillConfig config = DrillConfig.create();
-        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='2013-01-02'\n");
-        IteratorRegistry ir = new IteratorRegistry();
-        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
-        System.out.println(logicalPlan.toJsonString(config));
-        i.setup();
-        Collection<RunOutcome> outcomes = i.run();
+        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (deu INNER JOIN deu ON fix_sof.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='2013-01-02'\n");
+        logicalPlan.getGraph().getAdjList().printEdges();
+//        IteratorRegistry ir = new IteratorRegistry();
+//        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
+//        System.out.println(logicalPlan.toJsonString(config));
+//        i.setup();
+//        Collection<RunOutcome> outcomes = i.run();
 
     }
 }

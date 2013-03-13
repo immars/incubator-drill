@@ -100,7 +100,7 @@ public class HBaseRecordReader implements RecordReader {
                     valIndex = 0;
                 }
 
-                if (valIndex > curRes.size()) {
+                if (valIndex >= curRes.size()) {
                     if (hasMore) {
                         /* Get result list from the same scanner */
                         TableScanner scanner = scanners.get(currentScannerIndex);
