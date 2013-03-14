@@ -57,7 +57,7 @@ public class AdhocFromItemVisitorImpl implements FromItemVisitor {
                 selection = mapper.readValue(_selection.getBytes(), JSONOptions.class);
             }else{
                 storageEngine="mysql";
-                selection = mapper.readValue(new String("{\"startKey\":\"xxx\",\"endKey\":\"yyy\"}").getBytes(), JSONOptions.class);
+                selection = mapper.readValue(new String("{\"sql\":\"None\"}").getBytes(), JSONOptions.class);
             }
         }catch (Exception e){
             e.printStackTrace();

@@ -83,15 +83,20 @@ public class PlanParser {
         //logger.info("xxx");
         DrillConfig config = DrillConfig.create();
         LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='20130102'\n");
+//        LogicalPlan logicalPlan = new PlanParser().parse("Select fix.val,count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and deu.l0='visit'\n");
+        System.out.println("Before Optimize:");
         logicalPlan.getGraph().getAdjList().printEdges();
-        LogicalPlanOptimizer.getInstance().optimize(logicalPlan);
+        System.out.println(logicalPlan.toJsonString(config));
+        LogicalPlan optimizedPlan = LogicalPlanOptimizer.getInstance().optimize(logicalPlan);
+        System.out.println(optimizedPlan.toJsonString(config));
         System.out.println("ok");
 
 //        IteratorRegistry ir = new IteratorRegistry();
 //        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
-//        System.out.println(logicalPlan.toJsonString(config));
+
 //        i.setup();
 //        Collection<RunOutcome> outcomes = i.run();
+
 
     }
 }
