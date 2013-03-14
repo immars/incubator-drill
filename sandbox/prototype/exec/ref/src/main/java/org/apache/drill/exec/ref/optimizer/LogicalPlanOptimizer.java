@@ -1,9 +1,7 @@
 package org.apache.drill.exec.ref.optimizer;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.sun.tools.javac.util.Pair;
 import org.apache.drill.common.exceptions.DrillRuntimeException;
 import org.apache.drill.common.expression.*;
 import org.apache.drill.common.logical.JSONOptions;
@@ -11,6 +9,7 @@ import org.apache.drill.common.logical.LogicalPlan;
 import org.apache.drill.common.logical.OperatorGraph;
 import org.apache.drill.common.logical.data.*;
 import org.apache.drill.common.logical.graph.AdjacencyList;
+import org.apache.hadoop.hbase.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,7 +208,7 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
     private LogicalExpression getLogicalExpr(Filter filter, Scan scan) {
         LogicalExpression logicalExpr = filter.getExpr();
         String tableName = scan.getOutputReference().getPath().toString();
-        LogicalExpression simplifiedExpr = removeExtraExpression(logicalExpr, tableName).snd;
+        LogicalExpression simplifiedExpr = removeExtraExpression(logicalExpr, tableName).getSecond();
         return simplifiedExpr;
     }
 
@@ -219,15 +218,15 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
             Pair<Boolean, LogicalExpression> left = removeExtraExpression(argsTmp.get(0), tableName);
             Pair<Boolean, LogicalExpression> right = removeExtraExpression(argsTmp.get(1), tableName);
 
-            if (left.snd instanceof FunctionCall && right.snd instanceof FunctionCall) {
-                if (left.fst && right.fst) {
+            if (left.getSecond() instanceof FunctionCall && right.getSecond() instanceof FunctionCall) {
+                if (left.getFirst() && right.getFirst()) {
                     return new Pair<Boolean, LogicalExpression>(true, logicalExpression);
-                } else if (left.fst) {
+                } else if (left.getFirst()) {
                     return left;
                 } else {
                     return right;
                 }
-            } else if (left.fst && right.fst) {
+            } else if (left.getFirst() && right.getFirst()) {
                 return new Pair<Boolean, LogicalExpression>(true, logicalExpression);
             } else {
                 return new Pair<Boolean, LogicalExpression>(false, logicalExpression);
