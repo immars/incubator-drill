@@ -103,8 +103,9 @@ public class HBaseRecordReader implements RecordReader {
                     hasMore = scanner.next(curRes);
                     valIndex = 0;
                 }
-               // System.out.println("curRes size:"+curRes.size());
-                if (valIndex >= curRes.size()) {
+
+                if (valIndex > curRes.size()-1) {
+
                     if (hasMore) {
                         /* Get result list from the same scanner */
                         TableScanner scanner = scanners.get(currentScannerIndex);
@@ -114,25 +115,36 @@ public class HBaseRecordReader implements RecordReader {
                     } else {
                         /* Get result list from another scanner */
                         currentScannerIndex++;
-                        System.out.println(Math.random());
-                        System.out.println(currentScannerIndex);
-                        if (currentScannerIndex >= scanners.size()) {
+                        if (currentScannerIndex > scanners.size()-1) {
                             /* Already reached the last one */
-                            System.out.println("No more scanner left...");
                             LOG.info("No more scanner left...");
                             return NextOutcome.NONE_LEFT;
 
                         } else {
-                            System.out.println("Get data from next scanner...");
                             LOG.info("Get data from next scanner...");
                             TableScanner scanner = scanners.get(currentScannerIndex);
                             curRes.clear();
                             valIndex = 0;
                             hasMore = scanner.next(curRes);
+
+                            while (curRes.size() == 0) {
+                                /* Get next scanner with actual values */
+                                currentScannerIndex++;
+                                if (currentScannerIndex > scanners.size()-1) {
+                                    /* Already reached the last one */
+                                    LOG.info("No more scanner left...");
+                                    return NextOutcome.NONE_LEFT;
+                                } else {
+                                    LOG.info("Get data from next scanner...");
+                                    scanner = scanners.get(currentScannerIndex);
+                                    curRes.clear();
+                                    valIndex = 0;
+                                    hasMore = scanner.next(curRes);
+                                }
+                            }
                         }
                     }
                 }
-                if (curRes.size()==0) return NextOutcome.NONE_LEFT;
                 KeyValue kv = curRes.get(valIndex++);
                 record.setClearAndSetRoot(rootPath, convert(kv));
                 return NextOutcome.INCREMENTED_SCHEMA_CHANGED;

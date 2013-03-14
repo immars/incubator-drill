@@ -54,6 +54,16 @@ public abstract class LogicalOperatorBase implements LogicalOperator{
   }
 
   @Override
+  public void clearAllSubscribers() {
+      children.clear();
+  }
+
+  @Override
+  public List<LogicalOperator> getAllSubscribers() {
+      return children;
+  }
+
+  @Override
   public void accept(OpVisitor visitor) {
     if(visitor.enter(this)){
       for(LogicalOperator o : children){

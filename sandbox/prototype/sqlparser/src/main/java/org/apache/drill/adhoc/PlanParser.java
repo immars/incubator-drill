@@ -18,6 +18,7 @@ import org.apache.drill.exec.ref.IteratorRegistry;
 import org.apache.drill.exec.ref.ReferenceInterpreter;
 import org.apache.drill.exec.ref.RunOutcome;
 import org.apache.drill.exec.ref.eval.BasicEvaluatorFactory;
+import org.apache.drill.exec.ref.optimizer.LogicalPlanOptimizer;
 import org.apache.drill.exec.ref.rse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,13 +82,21 @@ public class PlanParser {
     public static void main(String[] args) throws Exception{
         //logger.info("xxx");
         DrillConfig config = DrillConfig.create();
-//        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (deu INNER JOIN deu ON fix_sof.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='2013-01-02'\n");
+
+//        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='20130102'\n");
+////        LogicalPlan logicalPlan = new PlanParser().parse("Select fix.val,count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and deu.l0='visit'\n");
+//        System.out.println("Before Optimize:");
 //        logicalPlan.getGraph().getAdjList().printEdges();
-//        IteratorRegistry ir = new IteratorRegistry();
-//        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
 //        System.out.println(logicalPlan.toJsonString(config));
-//        i.setup();
-//        Collection<RunOutcome> outcomes = i.run();
+//        LogicalPlan optimizedPlan = LogicalPlanOptimizer.getInstance().optimize(logicalPlan);
+//        System.out.println(optimizedPlan.toJsonString(config));
+//        System.out.println("ok");
+//
+////        IteratorRegistry ir = new IteratorRegistry();
+////        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
+//
+////        i.setup();
+////        Collection<RunOutcome> outcomes = i.run();
 
         //liucun
         String sql= new String("Select count(distinct sof-dsk_deu.uid) FROM (fix_sof-dsk INNER JOIN sof-dsk_deu ON fix_sof-dsk.uid=sof-dsk_deu.uid) WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000 and sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'").replace("-","xadrill");
@@ -100,11 +109,12 @@ public class PlanParser {
 
         LogicalPlan logicalPlan = new PlanParser().parse(sql);
         IteratorRegistry ir = new IteratorRegistry();
+
+        LogicalPlan optimizedPlan = LogicalPlanOptimizer.getInstance().optimize(logicalPlan);
         ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
         System.out.println(logicalPlan.toJsonString(config));
         logicalPlan.getGraph().getAdjList().printEdges();
         i.setup();
         Collection<RunOutcome> outcomes = i.run();
-
     }
 }
