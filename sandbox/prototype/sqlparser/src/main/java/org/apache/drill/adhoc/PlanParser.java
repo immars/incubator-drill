@@ -82,8 +82,12 @@ public class PlanParser {
     public static void main(String[] args) throws Exception{
         //logger.info("xxx");
         DrillConfig config = DrillConfig.create();
-        LogicalPlan logicalPlan = new PlanParser().parse("Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='20130102'\n");
-//        LogicalPlan logicalPlan = new PlanParser().parse("Select fix.val,count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and deu.l0='visit'\n");
+        String sql1 = "Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='20130102'\n";
+        String sql2 = "Select count(distinct sof-dsk_deu.uid) FROM (fix_sof-dsk INNER JOIN sof-dsk_deu ON fix_sof-dsk.uid=sof-dsk_deu.uid) WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000 and sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'\n";
+
+        LogicalPlan logicalPlan = new PlanParser().parse(sql2);
+
+
         System.out.println("Before Optimize:");
         logicalPlan.getGraph().getAdjList().printEdges();
         System.out.println(logicalPlan.toJsonString(config));
