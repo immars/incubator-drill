@@ -69,7 +69,7 @@ public class MysqlRecordReader implements RecordReader{
     {
         try {
             Class.forName("com.mysql.jdbc.Driver") ;
-            Connection conn = DriverManager.getConnection("jdbc:mysql://10.18.4.21:3306/fix_sof-dsk", "xadrill","123456");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://10.18.4.22:3306/fix_sof-dsk", "xadrill","123456");
             Statement stmt = conn.createStatement() ;
             rs = stmt.executeQuery(sql) ;
             rsMetaData = rs.getMetaData() ;

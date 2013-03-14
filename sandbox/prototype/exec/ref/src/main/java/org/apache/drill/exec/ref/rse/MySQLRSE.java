@@ -1,9 +1,11 @@
 package org.apache.drill.exec.ref.rse;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.apache.drill.common.config.DrillConfig;
+import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.common.logical.StorageEngineConfigBase;
 import org.apache.drill.common.logical.data.Scan;
 import org.apache.drill.exec.ref.rops.ROP;
@@ -34,19 +36,21 @@ public class MySQLRSE extends RSEBase {
     }
 
     public static class MySQLInputConfig implements ReadEntry{
-        public String startKey;
-        public String endKey;
+        public String sql;
+        @JsonIgnore
+        public SchemaPath rootPath;
     }
 
     @Override
     public Collection<ReadEntry> getReadEntries(Scan scan) throws IOException {
         MySQLInputConfig mySQLInputConfig = scan.getSelection().getWith(MySQLInputConfig.class);
+        mySQLInputConfig.rootPath = scan.getOutputReference();
         return Collections.singleton((ReadEntry) mySQLInputConfig);
     }
 
     @Override
     public RecordReader getReader(ReadEntry readEntry, ROP parentROP) throws IOException {
         MySQLInputConfig e = getReadEntry(MySQLInputConfig.class, readEntry);
-        return  null;//wcl return mysqlrecordreader
+        return  new MysqlRecordReader("select * from register_time where register_time.val>=20130101000000 and register_time.val<20130102000000", parentROP, e.rootPath);
     }
 }
