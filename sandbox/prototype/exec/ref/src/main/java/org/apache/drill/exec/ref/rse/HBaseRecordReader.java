@@ -105,7 +105,6 @@ public class HBaseRecordReader implements RecordReader {
                 }
 
                 if (valIndex > curRes.size()-1) {
-
                     if (hasMore) {
                         /* Get result list from the same scanner */
                         TableScanner scanner = scanners.get(currentScannerIndex);
@@ -145,6 +144,7 @@ public class HBaseRecordReader implements RecordReader {
                         }
                     }
                 }
+                //if(curRes.size()==0) return NextOutcome.NONE_LEFT;
                 KeyValue kv = curRes.get(valIndex++);
                 record.setClearAndSetRoot(rootPath, convert(kv));
                 return NextOutcome.INCREMENTED_SCHEMA_CHANGED;
