@@ -82,25 +82,23 @@ public class PlanParser {
     public static void main(String[] args) throws Exception{
         //logger.info("xxx");
         DrillConfig config = DrillConfig.create();
-        String sql1 = "Select count(deu.uid) FROM (fix INNER JOIN deu ON fix.uid=deu.uid) WHERE fix.register_time>=20130101000000 and fix.register_time<20130102000000 and deu.l0='visit' and deu.date='20130102'\n";
-        String sql2 = "Select count(distinct sof-dsk_deu.uid) FROM (fix_sof-dsk INNER JOIN sof-dsk_deu ON fix_sof-dsk.uid=sof-dsk_deu.uid) WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000 and sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'\n";
 
-        LogicalPlan logicalPlan = new PlanParser().parse(sql2);
+        //liucun
+        String sql= new String("Select count(distinct sof-dsk_deu.uid) FROM (fix_sof-dsk INNER JOIN sof-dsk_deu ON fix_sof-dsk.uid=sof-dsk_deu.uid) WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000 and sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'").replace("-","xadrill");
 
+        //mysql
+        //String sql = new String("select * from fix_sof-dsk").replace("-","xadrill");
 
-        System.out.println("Before Optimize:");
-        logicalPlan.getGraph().getAdjList().printEdges();
+        //hbase
+        //String sql = new String("Select sof-dsk_deu.uid from sof-dsk_deu where sof-dsk_deu.date='20130102' and sof-dsk_deu.l0='visit'").replace("-","xadrill");
+
+        LogicalPlan logicalPlan = new PlanParser().parse(sql);
+        IteratorRegistry ir = new IteratorRegistry();
+        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
         System.out.println(logicalPlan.toJsonString(config));
-        LogicalPlan optimizedPlan = LogicalPlanOptimizer.getInstance().optimize(logicalPlan);
-        System.out.println(optimizedPlan.toJsonString(config));
-        System.out.println("ok");
-
-//        IteratorRegistry ir = new IteratorRegistry();
-//        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
-
-//        i.setup();
-//        Collection<RunOutcome> outcomes = i.run();
-
-
+        logicalPlan.getGraph().getAdjList().printEdges();
+        i.setup();
+        Collection<RunOutcome> outcomes = i.run();
+        System.out.println("Finish!");
     }
 }

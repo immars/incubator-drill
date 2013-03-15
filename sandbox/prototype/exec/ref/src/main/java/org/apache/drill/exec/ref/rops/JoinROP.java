@@ -178,6 +178,7 @@ public class JoinROP extends ROPBase<Join> {
     }
 
     class InnerIterator extends JoinIterator {
+        int wclCount =0;
         NextOutcome rightOutcome;
 
         @Override
@@ -190,9 +191,11 @@ public class JoinROP extends ROPBase<Join> {
             final RecordPointer rightPointer = right.getRecordPointer();
             while (true) {
                 if (curIdx == 0) {
+                    //System.out.println("wclCount:"+wclCount++);
                     rightOutcome = right.next();
 
                     if (rightOutcome == NextOutcome.NONE_LEFT) {
+                        System.out.println("hbase done wclCount:"+wclCount);
                         break;
                     }
                 }
@@ -206,15 +209,18 @@ public class JoinROP extends ROPBase<Join> {
                     }
                 });
 
+
+                if (curIdx >= bufferLength) {
+                    //System.out.println(curIdx);
+                    curIdx = 0;
+                }
+
                 if (option.isPresent()) {
+                    //System.out.println(Math.random());
                     setOutputRecord(rightPointer, bufferObj.pointer);
                     return (bufferObj.schemaChanged || rightOutcome == NextOutcome.INCREMENTED_SCHEMA_CHANGED) ?
                             NextOutcome.INCREMENTED_SCHEMA_CHANGED :
                             NextOutcome.INCREMENTED_SCHEMA_UNCHANGED;
-                }
-
-                if (curIdx >= bufferLength) {
-                    curIdx = 0;
                 }
             }
 

@@ -83,20 +83,25 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
       handle.progress(pos, recordCount);
       if(!handle.okToContinue()){
         logger.debug("Told to cancel, breaking run.");
+          System.out.println("Told to cancel, breaking run.");
         outcome = OutcomeType.CANCELED;
         break;
       }else if(!more){
         outcome = OutcomeType.SUCCESS;
         logger.debug("Breaking because no more records were found.");
+          System.out.println("Breaking because no more records were found.");
         break;
       }else{
         logger.debug("No problems, doing next progress iteration.");
+          System.out.println("No problems, doing next progress iteration.");
       }
     }
     }catch(Exception e){
+        e.printStackTrace();
+        System.out.println(e.getMessage());
       exception = e ;
     }
-    System.out.println(recordCount);//wcl
+    //System.out.println(recordCount);//wcl
     cleanup(outcome);
     return new RunOutcome(outcome, pos, recordCount, exception);
     
