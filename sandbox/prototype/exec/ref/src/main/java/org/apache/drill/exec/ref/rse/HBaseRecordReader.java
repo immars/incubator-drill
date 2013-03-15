@@ -94,6 +94,7 @@ public class HBaseRecordReader implements RecordReader {
         public NextOutcome next() {
             try {
                 NextOutcome outcome = next(scanners.get(currentScannerIndex));
+                wclCount++;
                 while (outcome == NextOutcome.NONE_LEFT) {
                     currentScannerIndex++;
                     if (currentScannerIndex > scanners.size()-1) {
@@ -102,7 +103,6 @@ public class HBaseRecordReader implements RecordReader {
                     outcome = next(scanners.get(currentScannerIndex));
                 }
                 return outcome;
-
             } catch (IOException e) {
                 throw new RecordException("Failure while reading record", null, e);
             }

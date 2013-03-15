@@ -62,7 +62,7 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
   @Override
   public RunOutcome run(StatusHandle handle) {
     Throwable exception = null;
-    final int runsize = 1000;
+    final int runsize = 100000;
     int recordCount = 0;
     OutcomeType outcome = OutcomeType.FAILED;
     long pos = -1; 

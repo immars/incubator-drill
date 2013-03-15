@@ -191,11 +191,9 @@ public class JoinROP extends ROPBase<Join> {
             final RecordPointer rightPointer = right.getRecordPointer();
             while (true) {
                 if (curIdx == 0) {
-                    //System.out.println("wclCount:"+wclCount++);
                     rightOutcome = right.next();
 
                     if (rightOutcome == NextOutcome.NONE_LEFT) {
-                        System.out.println("hbase done wclCount:"+wclCount);
                         break;
                     }
                 }

@@ -60,25 +60,9 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
         //filter
         SingleInputOperator filter = null;
         if(whereExpr!=null){
-//            filter = new Filter(whereExpr);
-//            filter.setInput(fromLop);
-//            logicalOperators.add(filter);
-//            if (fromLop instanceof Join) {
-//                LogicalOperator sourceLeft = ((Join) fromLop).getLeft();
-//                filter.setInput(sourceLeft);
-//
-//                LogicalOperator sourceRight = ((Join) fromLop).getRight();
-//                Filter filter2 = new Filter(whereExpr);
-//                filter2.setInput(sourceRight);
-//
-//                ((Join) fromLop).setLeft(filter);
-//                ((Join) fromLop).setRight(filter2);
-//                logicalOperators.add(filter2);
-//                logicalOperators.add(filter);
-//            } else {
-//                filter.setInput(fromLop);
-//                logicalOperators.add(filter);
-//            }
+            filter = new Filter(whereExpr);
+            filter.setInput(fromLop);
+            logicalOperators.add(filter);
         }
 
         //Get select item expressions && distinct

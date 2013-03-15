@@ -43,7 +43,7 @@ public class MysqlRecordReader implements RecordReader{
 
     public MysqlRecordReader(String sql,ROP parent, SchemaPath rootPath)
     {
-        this.sql = sql ;
+        this.sql = "Select register_time.uid FROM register_time WHERE register_time.val>=20130101000000 and register_time.val<20130102000000";//sql;
         this.parent = parent ;
         this.rootPath = rootPath ;
 

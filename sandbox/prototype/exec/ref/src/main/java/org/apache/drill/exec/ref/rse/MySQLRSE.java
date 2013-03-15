@@ -51,6 +51,7 @@ public class MySQLRSE extends RSEBase {
     @Override
     public RecordReader getReader(ReadEntry readEntry, ROP parentROP) throws IOException {
         MySQLInputConfig e = getReadEntry(MySQLInputConfig.class, readEntry);
-        return  new MysqlRecordReader("select * from register_time where register_time.val>=20130101000000 and register_time.val<20130102000000", parentROP, e.rootPath);
+        return new MysqlRecordReader(e.sql, parentROP, e.rootPath);
+        //return  new MysqlRecordReader("select * from register_time where register_time.val>=20130101000000 and register_time.val<20130102000000", parentROP, e.rootPath);
     }
 }

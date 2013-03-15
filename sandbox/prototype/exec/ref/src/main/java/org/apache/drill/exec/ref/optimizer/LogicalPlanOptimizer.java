@@ -1,7 +1,9 @@
 package org.apache.drill.exec.ref.optimizer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.common.collect.ImmutableList;
+import org.apache.drill.common.config.DrillConfig;
 import org.apache.drill.common.exceptions.DrillRuntimeException;
 import org.apache.drill.common.expression.*;
 import org.apache.drill.common.logical.JSONOptions;
@@ -10,6 +12,7 @@ import org.apache.drill.common.logical.OperatorGraph;
 import org.apache.drill.common.logical.data.*;
 import org.apache.drill.common.logical.graph.AdjacencyList;
 import org.apache.hadoop.hbase.util.Pair;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +42,7 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
     @Override
     public LogicalPlan optimize(LogicalPlan plan) throws IOException {
         LogicalPlan optimizedPlan = optimizeLogicalPlanStructure(plan);
-        System.out.println("After optimize structure: ");
-        optimizedPlan.getGraph().getAdjList().printEdges();
         optimizedPlan = combineLogicalOperators(optimizedPlan);
-        System.out.println("After combine logical operator: ");
-        optimizedPlan.getGraph().getAdjList().printEdges();
         return optimizedPlan;
     }
 
@@ -89,15 +88,20 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
                     /* Combine filter and scan to hbase scanner */
                     Filter filter = null;
                     List<LogicalOperator> filterChildren = null;
+                    JSONOptions selection = null;
                     for (LogicalOperator operator : source) {
                         if (operator instanceof Filter) {
                             /* Should have only one filter */
                             filter = (Filter) operator;
+                            LogicalExpression expr = filter.getExpr();
+                            JSONObject hbaseScanInfo = getInitHBaseScanInfo();
+                            getHBaseScanInfo(expr, hbaseScanInfo);
+                            selection = mapper.readValue(hbaseScanInfo.toJSONString().getBytes(), JSONOptions.class);
                             filterChildren = new ArrayList<LogicalOperator>(operator.getAllSubscribers());
                         }
                     }
                     if (filter != null) {
-                        source = new Scan(((Scan) source).getStorageEngine(), ((Scan) source).getSelection(), ((Scan) source).getOutputReference());
+                        source = new Scan(((Scan) source).getStorageEngine(), selection, ((Scan) source).getOutputReference());
                         for (LogicalOperator child : filterChildren) {
                             if (child instanceof Join) {
                                 if (((Join) child).getLeft() == filter) {
@@ -118,6 +122,60 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
         List<LogicalOperator> operators = getLogicalOperatorsFromSource(newSources);
         return new LogicalPlan(plan.getProperties(), plan.getStorageEngines(), operators);
     }
+
+    private JSONObject getInitHBaseScanInfo() {
+        JSONObject hbaseScanInfo = new JSONObject();
+        for (int i=0; i<5; i++) {
+            hbaseScanInfo.put("l"+i, "*");
+        }
+        return hbaseScanInfo;
+    }
+
+    private void getHBaseScanInfo(LogicalExpression expr, JSONObject scanInfo) {
+        if (expr instanceof FunctionCall) {
+            ImmutableList<LogicalExpression> args = ((FunctionCall) expr).args;
+            FunctionDefinition definition = ((FunctionCall) expr).getDefinition();
+            if (args.get(0) instanceof FieldReference) {
+                String ref = ((FieldReference) args.get(0)).getPath().toString();
+                String[] tableAndAttr = ref.split("\\.");
+                if (tableAndAttr[1].equals("l0")) {
+                    String value = ((ValueExpressions.QuotedString) args.get(1)).value;
+                    scanInfo.put("l0", value);
+                } else if (tableAndAttr[1].equals("l1")) {
+                    String value = ((ValueExpressions.QuotedString) args.get(1)).value;
+                    scanInfo.put("l1", value);
+                } else if (tableAndAttr[1].equals("l2")) {
+                    String value = ((ValueExpressions.QuotedString) args.get(1)).value;
+                    scanInfo.put("l2", value);
+                } else if (tableAndAttr[1].equals("l3")) {
+                    String value = ((ValueExpressions.QuotedString) args.get(1)).value;
+                    scanInfo.put("l3", value);
+                } else if (tableAndAttr[1].equals("l4")) {
+                    String value = ((ValueExpressions.QuotedString) args.get(1)).value;
+                    scanInfo.put("l4", value);
+                } else if (tableAndAttr[1].equals("date")) {
+                    String value = ((ValueExpressions.QuotedString) args.get(1)).value;
+                    if (definition.getName().equals("less than or equal to")) {
+                        scanInfo.put("startDate", value);
+                    } else if (definition.getName().equals("greater than or equal to")) {
+                        scanInfo.put("endDate", value);
+                    } else if (definition.getName().equals("equal")) {
+                        scanInfo.put("startDate", value);
+                        scanInfo.put("endDate", value);
+                    } else {
+                        throw new DrillRuntimeException("Can't parse hbase scan info " + definition.getName());
+                    }
+                }
+            }
+            if (args.get(0) instanceof FunctionCall) {
+                getHBaseScanInfo(args.get(0), scanInfo);
+            }
+            if (args.get(1) instanceof FunctionCall) {
+                getHBaseScanInfo(args.get(1), scanInfo);
+            }
+        }
+    }
+
 
     private List<LogicalOperator> getLogicalOperatorsFromSource(List<SourceOperator> sources) {
         Set<LogicalOperator> dup = new HashSet<LogicalOperator>();
@@ -155,7 +213,6 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
         }
 
         if (filterNode != null) {
-            int index = 0;
             Filter filter =  (Filter) filterNode.getNodeValue();
 
             /* Check if parent is source operator */
@@ -176,13 +233,17 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
                         if (children instanceof SingleInputOperator) {
                             ((SingleInputOperator) children).setInput(optimizedFilter);
                         } else if (children instanceof Join){
-                            if (index == 0) {
+                            /* Join condition should match join relation order, a inner join b on a.val=b.val */
+                            JoinCondition condition = ((Join) children).getConditions()[0];
+                            String rootPathOfCondition = ((FieldReference)condition.getLeft()).getRootSegment().
+                                    getNameSegment().getPath().toString();
+                            String rootPathOfRelation = ((Scan) source).getOutputReference().getPath().toString();
+                            if (rootPathOfCondition.equals(rootPathOfRelation)) {
                                 ((Join) children).setLeft(optimizedFilter);
-                            } else if (index == 1) {
+                            } else  {
                                 ((Join) children).setRight(optimizedFilter);
-                            } else {
-                                throw new DrillRuntimeException("Join can has only two input logical operator!");
                             }
+
                         }
                     }
 
@@ -193,7 +254,6 @@ public class LogicalPlanOptimizer implements PlanOptimizer {
                         }
                     }
 
-                    index++;
                 }
             } else {
                 /* Don't need any optimization */

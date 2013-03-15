@@ -28,13 +28,6 @@ public class AdhocFromItemVisitorImpl implements FromItemVisitor {
 
     private LogicalOperator lop;
     private LogicalExpression where;
-    private String startDate;
-    private String endDate;
-    private String l0="*";
-    private String l1="*";
-    private String l2="*";
-    private String l3="*";
-    private String l4="*";
 
 
     public AdhocFromItemVisitorImpl(LogicalExpression where){
@@ -52,8 +45,7 @@ public class AdhocFromItemVisitorImpl implements FromItemVisitor {
         try{
             if (tableName.contains("deu")){
                 storageEngine = "hbase";
-                getHBaseSelection(where);
-                String _selection = String.format("{\"startDate\":\"%s\",\"endDate\":\"%s\", \"l0\":\"%s\",\"l1\":\"%s\",\"l2\":\"%s\",\"l3\":\"%s\",\"l4\":\"%s\"}",startDate,endDate,l0,l1,l2,l3,l4);
+                String _selection = String.format(new String("{\"hbase\":\"None\"}"));
                 selection = mapper.readValue(_selection.getBytes(), JSONOptions.class);
             }else{
                 storageEngine="mysql";
@@ -98,7 +90,17 @@ public class AdhocFromItemVisitorImpl implements FromItemVisitor {
             FunctionCall funcExpr = (FunctionCall) exprVisitor.getLogicalExpression();
             List<LogicalExpression> args = funcExpr.args;
             String relationship = getRelationship(funcExpr.getDefinition().getName());
-            JoinCondition jc = new JoinCondition(relationship, args.get(0), args.get(1));
+            String rootPath = ((FieldReference)args.get(0)).getRootSegment().
+                    getNameSegment().getPath().toString();
+
+            JoinCondition jc = null;
+            /* Join condition should match join relation order */
+            if (rootPath.equals(left.toString())) {
+               jc = new JoinCondition(relationship, args.get(0), args.get(1));
+            } else if (rootPath.equals(right.toString())) {
+               jc = new JoinCondition(relationship, args.get(1), args.get(0));
+            }
+
             jcs = new JoinCondition[1];
             jcs[0] = jc;
         } else {
@@ -134,56 +136,6 @@ public class AdhocFromItemVisitorImpl implements FromItemVisitor {
         return "";
     }
 
-    private void getHBaseSelection(LogicalExpression where){
-        if(where instanceof FunctionCall){
-            ImmutableList<LogicalExpression> args = ((FunctionCall)where).args;
-            FunctionDefinition functionDefinition =  ((FunctionCall)where).getDefinition();
-            if(! (args.get(0) instanceof FunctionCall) && !(args.get(1) instanceof FunctionCall)){
-                if(args.get(0) instanceof SchemaPath){
-                    if(args.get(1) instanceof ValueExpressions.QuotedString){
-                        hbaseHelper((SchemaPath)args.get(0),(ValueExpressions.QuotedString)args.get(1), functionDefinition);
-                    }
-                }else{
-                    if(args.get(1) instanceof ValueExpressions.QuotedString){
-                        hbaseHelper((SchemaPath)args.get(1),(ValueExpressions.QuotedString)args.get(0), functionDefinition);
-                    }
-                }
-            }
-            getHBaseSelection(args.get(0));
-            getHBaseSelection(args.get(1));
-        }
-    }
-
-    private void hbaseHelper(SchemaPath schemaPath, ValueExpressions.QuotedString quotedString, FunctionDefinition functionDefinition){
-        String path = schemaPath.getPath().toString();
-        String value = quotedString.value;
-        String funcionName = functionDefinition.getName();
-        if (path.contains("deu.date")){
-            if (funcionName.equals("less than")){
-                endDate = value;
-            }else if (funcionName.equals("greater than")){
-                startDate = value;
-            }else{
-                endDate=startDate=value;
-            }
-        }
-
-        if(path.contains("deu.l0")){
-            l0 = value;
-        }
-        if(path.contains("deu.l1")){
-            l1 = value;
-        }
-        if(path.contains("deu.l2")){
-            l2 = value;
-        }
-        if(path.contains("deu.l3")){
-            l3 = value;
-        }
-        if(path.contains("deu.l4")){
-            l4 = value;
-        }
-    }
     private String getMySQLSelection(LogicalExpression where){
         return null;
     }

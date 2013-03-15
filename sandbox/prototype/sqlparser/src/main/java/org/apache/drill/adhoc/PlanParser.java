@@ -83,22 +83,24 @@ public class PlanParser {
         //logger.info("xxx");
         DrillConfig config = DrillConfig.create();
 
+
         //liucun
         String sql= new String("Select count(distinct sof-dsk_deu.uid) FROM (fix_sof-dsk INNER JOIN sof-dsk_deu ON fix_sof-dsk.uid=sof-dsk_deu.uid) WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000 and sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'").replace("-","xadrill");
-
-        //mysql
-        //String sql = new String("select * from fix_sof-dsk").replace("-","xadrill");
-
-        //hbase
-        //String sql = new String("Select sof-dsk_deu.uid from sof-dsk_deu where sof-dsk_deu.date='20130102' and sof-dsk_deu.l0='visit'").replace("-","xadrill");
+        String sql2= new String("Select sof-dsk_deu.uid FROM sof-dsk_deu WHERE sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'").replace("-","xadrill");
+        String sql3= new String("Select fix_sof-dsk.uid FROM fix_sof-dsk WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000").replace("-","xadrill");
 
         LogicalPlan logicalPlan = new PlanParser().parse(sql);
-        IteratorRegistry ir = new IteratorRegistry();
-        ReferenceInterpreter i = new ReferenceInterpreter(logicalPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
+        System.out.println("Before optimize: ");
         System.out.println(logicalPlan.toJsonString(config));
-        logicalPlan.getGraph().getAdjList().printEdges();
+
+        LogicalPlan optimizedPlan = LogicalPlanOptimizer.getInstance().optimize(logicalPlan);
+        System.out.println("After optimize: ");
+        System.out.println(optimizedPlan.toJsonString(config));
+        IteratorRegistry ir = new IteratorRegistry();
+        ReferenceInterpreter i = new ReferenceInterpreter(optimizedPlan, ir, new BasicEvaluatorFactory(ir), new RSERegistry(config));
+
         i.setup();
         Collection<RunOutcome> outcomes = i.run();
-        System.out.println("Finish!");
+
     }
 }
