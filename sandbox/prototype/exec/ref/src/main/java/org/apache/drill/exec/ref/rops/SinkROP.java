@@ -17,12 +17,16 @@
  ******************************************************************************/
 package org.apache.drill.exec.ref.rops;
 
+import org.apache.drill.exec.ref.RecordPointer;
 import org.apache.drill.exec.ref.RunOutcome;
+
+import java.util.List;
 
 public interface SinkROP {
   
   public RunOutcome run(StatusHandle handle);
-  
+
+    public List<RecordPointer>  getRecords();
   public interface StatusHandle{
     public void progress(long bytes, long records);
     public boolean okToContinue();

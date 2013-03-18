@@ -18,6 +18,8 @@
 package org.apache.drill.exec.ref.rops;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.drill.common.logical.data.SinkOperator;
@@ -34,6 +36,7 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
   
   protected RecordIterator iter;
   protected RecordPointer record;
+    public List<RecordPointer> records = new ArrayList<>();//wcl
   
   public BaseSinkROP(T config) {
     super(config);
@@ -62,7 +65,7 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
   @Override
   public RunOutcome run(StatusHandle handle) {
     Throwable exception = null;
-    final int runsize = 1000;
+    final int runsize = 1000;//wcl
     int recordCount = 0;
     OutcomeType outcome = OutcomeType.FAILED;
     long pos = -1; 
@@ -78,6 +81,7 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
           break;
         }else{
           pos = sinkRecord(record);
+            records.add(record.copy());
         }
       }
       handle.progress(pos, recordCount);
@@ -106,6 +110,11 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
     return new RunOutcome(outcome, pos, recordCount, exception);
     
   }
+
+    //wcl
+    public List<RecordPointer> getRecords(){
+        return records;
+    }
 
   /**
    * 

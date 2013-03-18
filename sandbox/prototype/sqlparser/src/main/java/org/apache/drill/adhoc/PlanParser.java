@@ -122,7 +122,8 @@ public class PlanParser {
         String sql= new String("Select count(distinct sof-dsk_deu.uid) FROM (fix_sof-dsk INNER JOIN sof-dsk_deu ON fix_sof-dsk.uid=sof-dsk_deu.uid) WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000 and sof-dsk_deu.l0='visit' and sof-dsk_deu.date='20130102'").replace("-","xadrill");
 
         //mysql
-        //String sql = new String("select * from fix_sof-dsk").replace("-","xadrill");
+        //String sql = new String("select fix_sof-dsk.uid from fix_sof-dsk").replace("-","xadrill");
+        //String sql = new String("Select fix_sof-dsk.uid FROM fix_sof-dsk WHERE fix_sof-dsk.register_time>=20130101000000 and fix_sof-dsk.register_time<20130102000000").replace("-","xadrill");
 
         //hbase
         //String sql = new String("Select sof-dsk_deu.uid from sof-dsk_deu where sof-dsk_deu.date='20130102' and sof-dsk_deu.l0='visit'").replace("-","xadrill");

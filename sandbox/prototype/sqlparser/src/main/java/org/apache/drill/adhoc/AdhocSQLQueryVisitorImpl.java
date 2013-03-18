@@ -2,9 +2,7 @@ package org.apache.drill.adhoc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.drill.common.expression.FieldReference;
-import org.apache.drill.common.expression.FunctionCall;
-import org.apache.drill.common.expression.LogicalExpression;
+import org.apache.drill.common.expression.*;
 import org.apache.drill.common.logical.JSONOptions;
 import org.apache.drill.common.logical.data.*;
 
@@ -29,10 +27,18 @@ import java.util.List;
 public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
 
     private List<LogicalOperator> logicalOperators = new ArrayList<LogicalOperator>();
-
+    private NamedExpression[] selections = null;
 
     public List<LogicalOperator> getLogicalOperators() {
         return logicalOperators;
+    }
+
+    public List<String> getSelections(){
+        List<String> _selections = new ArrayList<>();
+        for(NamedExpression namedExpression:selections){
+            _selections.add(namedExpression.getRef().getPath().toString());
+        }
+        return _selections;
     }
 
     @Override
@@ -118,7 +124,7 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
         }
 
         //collapsing aggregate
-        NamedExpression[] selections = changeToNamedExpressions(selectItemlogicalExpressions);
+        selections = changeToNamedExpressions(selectItemlogicalExpressions);
         CollapsingAggregate collapsingAggregate = getCollapsingAggregate(selections, segment);
         if (collapsingAggregate!=null){
             if(segment !=null){
@@ -175,7 +181,9 @@ public class AdhocSQLQueryVisitorImpl implements SelectVisitor {
                 namedExpressions.add(namedExpression);
             } else if (exprTmp instanceof FunctionCall){
                 LogicalExpression ref = ((FunctionCall) exprTmp).args.get(0);
-                NamedExpression namedExpression = new NamedExpression(exprTmp, (FieldReference) ref);
+                String functionName = ((FunctionCall)exprTmp).getDefinition().getName();
+                FieldReference newFieldRef = new FieldReference(functionName+"."+((SchemaPath)ref).getPath());
+                NamedExpression namedExpression = new NamedExpression(exprTmp, newFieldRef);
                 namedExpressions.add(namedExpression);
             }
         }
