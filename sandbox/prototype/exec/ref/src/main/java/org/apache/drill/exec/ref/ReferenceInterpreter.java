@@ -74,7 +74,7 @@ public class ReferenceInterpreter {
   }
   //wcl
   public List<List<RecordPointer>> getRecords(){
-      return records;
+    return records;
   }
   
   public static void main(String[] args) throws Exception{
