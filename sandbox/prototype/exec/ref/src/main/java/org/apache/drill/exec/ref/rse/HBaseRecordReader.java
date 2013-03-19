@@ -50,9 +50,6 @@ public class HBaseRecordReader implements RecordReader {
     private SchemaPath rootPath;
     private UnbackedRecord record = new UnbackedRecord();
 
-    private  long wclCount = 0;
-
-
     public HBaseRecordReader(String startDate, String endDate, String l0, String l1, String l2, String l3, String l4, ROP parent, SchemaPath rootPath) {
         this.startDate = startDate;
         this.endDate = endDate;
@@ -93,61 +90,15 @@ public class HBaseRecordReader implements RecordReader {
         @Override
         public NextOutcome next() {
             try {
-                if (valIndex == -1) {
-                    LOG.info("First time call next() method in HBaseRecordReader...");
-                    /* First time call this method */
-                    if (scanners.size() == 0) {
+                NextOutcome outcome = next(scanners.get(currentScannerIndex));
+                while (outcome == NextOutcome.NONE_LEFT) {
+                    currentScannerIndex++;
+                    if (currentScannerIndex > scanners.size()-1) {
                         return NextOutcome.NONE_LEFT;
                     }
-                    TableScanner scanner = scanners.get(currentScannerIndex);
-                    hasMore = scanner.next(curRes);
-                    valIndex = 0;
+                    outcome = next(scanners.get(currentScannerIndex));
                 }
-
-                if (valIndex > curRes.size()-1) {
-                    if (hasMore) {
-                        /* Get result list from the same scanner */
-                        TableScanner scanner = scanners.get(currentScannerIndex);
-                        curRes.clear();
-                        hasMore = scanner.next(curRes);
-                        valIndex = 0;
-                    } else {
-                        /* Get result list from another scanner */
-                        currentScannerIndex++;
-                        if (currentScannerIndex > scanners.size()-1) {
-                            /* Already reached the last one */
-                            LOG.info("No more scanner left...");
-                            return NextOutcome.NONE_LEFT;
-
-                        } else {
-                            LOG.info("Get data from next scanner...");
-                            TableScanner scanner = scanners.get(currentScannerIndex);
-                            curRes.clear();
-                            valIndex = 0;
-                            hasMore = scanner.next(curRes);
-
-                            while (curRes.size() == 0) {
-                                /* Get next scanner with actual values */
-                                currentScannerIndex++;
-                                if (currentScannerIndex > scanners.size()-1) {
-                                    /* Already reached the last one */
-                                    LOG.info("No more scanner left...");
-                                    return NextOutcome.NONE_LEFT;
-                                } else {
-                                    LOG.info("Get data from next scanner...");
-                                    scanner = scanners.get(currentScannerIndex);
-                                    curRes.clear();
-                                    valIndex = 0;
-                                    hasMore = scanner.next(curRes);
-                                }
-                            }
-                        }
-                    }
-                }
-                if(curRes.size()==0) return NextOutcome.NONE_LEFT;
-                KeyValue kv = curRes.get(valIndex++);
-                record.setClearAndSetRoot(rootPath, convert(kv));
-                return NextOutcome.INCREMENTED_SCHEMA_CHANGED;
+                return outcome;
             } catch (IOException e) {
                 throw new RecordException("Failure while reading record", null, e);
             }
@@ -157,7 +108,38 @@ public class HBaseRecordReader implements RecordReader {
         public ROP getParent() {
             return parent;
         }
+
+        private NextOutcome next(TableScanner scanner) throws IOException {
+            if (valIndex == -1) {
+                if (scanner == null) {
+                    return RecordIterator.NextOutcome.NONE_LEFT;
+                }
+                hasMore = scanner.next(curRes);
+                valIndex = 0;
+            }
+
+            if (valIndex > curRes.size()-1) {
+                while (hasMore) {
+                        /* Get result list from the same scanner and skip curRes with no element */
+                    curRes.clear();
+                    hasMore = scanner.next(curRes);
+                    valIndex = 0;
+                    if (curRes.size() != 0) {
+                        KeyValue kv = curRes.get(valIndex++);
+                        record.setClearAndSetRoot(rootPath, convert(kv));
+                        return NextOutcome.INCREMENTED_SCHEMA_CHANGED;
+                    }
+                }
+                return NextOutcome.NONE_LEFT;
+            }
+            KeyValue kv = curRes.get(valIndex++);
+            record.setClearAndSetRoot(rootPath, convert(kv));
+            return NextOutcome.INCREMENTED_SCHEMA_CHANGED;
+        }
+
     }
+
+
 
     @Override
     public RecordIterator getIterator() {

@@ -75,7 +75,7 @@ public class SchemaPath extends LogicalExpressionBase{
   
   
 	public SchemaPath(CharSequence str) {
-	  //if(!ENTIRE_PATTERN.matcher(str).matches()) throw new IllegalArgumentException("Identifier doesn't match expected pattern.");//wcl
+	  if(!ENTIRE_PATTERN.matcher(str).matches()) throw new IllegalArgumentException("Identifier doesn't match expected pattern.");
 	  this.originalPath = str;
 	  Matcher m = SEGMENT_PATTERN.matcher(str);
 		PathSegment r = null;

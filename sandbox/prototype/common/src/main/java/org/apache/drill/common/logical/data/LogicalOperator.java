@@ -38,8 +38,8 @@ public interface LogicalOperator extends Iterable<LogicalOperator>{
 	public void accept(OpVisitor visitor);
 	public void registerAsSubscriber(LogicalOperator operator);
 	public void setupAndValidate(List<LogicalOperator> operators, Collection<ValidationError> errors);
-    public void clearAllSubscribers();
-    public List<LogicalOperator> getAllSubscribers();
+  public void clearAllSubscribers();
+  public List<LogicalOperator> getAllSubscribers();
 	
 	
 

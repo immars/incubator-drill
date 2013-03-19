@@ -42,21 +42,21 @@
 			<artifactId>hppc</artifactId>
 			<version>0.4.2</version>
 		</dependency>
-        <dependency>
-            <groupId>java.sql</groupId>
-            <artifactId>java.sql</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../../external lib/mysql-connector-java-5.1.23-bin.jar</systemPath>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>java.sql</groupId>-->
+            <!--<artifactId>java.sql</artifactId>-->
+            <!--<version>1.0</version>-->
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${basedir}/../../external lib/mysql-connector-java-5.1.23-bin.jar</systemPath>-->
+        <!--</dependency>-->
 
-        <dependency>
-            <groupId>org.apache</groupId>
-            <artifactId>org.apache</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../../external lib/xa_hbase_scanner.jar</systemPath>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache</groupId>-->
+            <!--<artifactId>org.apache</artifactId>-->
+            <!--<version>1.0</version>-->
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${basedir}/../../external lib/xa_hbase_scanner.jar</systemPath>-->
+        <!--</dependency>-->
 
 	</dependencies>
 

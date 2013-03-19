@@ -65,7 +65,7 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
   @Override
   public RunOutcome run(StatusHandle handle) {
     Throwable exception = null;
-    final int runsize = 1000;//wcl
+    final int runsize = 100000;//wcl
     int recordCount = 0;
     OutcomeType outcome = OutcomeType.FAILED;
     long pos = -1; 
@@ -73,7 +73,6 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
         long xx=0;
     while(true){
       boolean more = true;
-        recordCount = 0; //wcl
       for(;recordCount < runsize; recordCount++){
         NextOutcome r = iter.next();
         if(r == NextOutcome.NONE_LEFT){
@@ -105,7 +104,6 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
         System.out.println(e.getMessage());
       exception = e ;
     }
-    //System.out.println(recordCount);//wcl
     cleanup(outcome);
     return new RunOutcome(outcome, pos, recordCount, exception);
     
