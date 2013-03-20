@@ -18,13 +18,15 @@
 package org.apache.drill.common.logical.data;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.apache.drill.common.expression.FieldReference;
 
-
+@JsonTypeName("distinct")
 public class Distinct extends SingleInputOperator {
   private FieldReference ref;
 
-  public Distinct(FieldReference ref) {
+  public Distinct(@JsonProperty("ref") FieldReference ref) {
     this.ref = ref;
   }
 

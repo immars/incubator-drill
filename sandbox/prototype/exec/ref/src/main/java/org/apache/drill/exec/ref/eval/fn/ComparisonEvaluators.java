@@ -42,7 +42,7 @@ public class ComparisonEvaluators {
 
     @Override
     public BooleanScalar eval() {
-      return new BooleanScalar(left.eval().getAsBooleanValue().getBoolean() && left.eval().getAsBooleanValue().getBoolean());
+      return new BooleanScalar(left.eval().getAsBooleanValue().getBoolean() && right.eval().getAsBooleanValue().getBoolean());
     }
 
   }
