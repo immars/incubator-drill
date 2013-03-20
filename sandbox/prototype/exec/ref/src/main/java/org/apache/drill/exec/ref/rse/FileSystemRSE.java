@@ -97,7 +97,7 @@ public class FileSystemRSE extends RSEBase {
         
   }
 
-  public static class FileSystemOutputConfig {      //wcl static
+  public class FileSystemOutputConfig {
     public String file;
     public ConverterType type;
   }

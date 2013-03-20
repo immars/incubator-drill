@@ -134,21 +134,4 @@ public class SchemaPath extends LogicalExpressionBase{
     return "SchemaPath [rootSegment=" + rootSegment + "]";
   }
 
-    public static void main(String[] args) throws Exception{
-        SchemaPath schemaPath = new SchemaPath("sof-dsk_deu");
-        Matcher m = SEGMENT_PATTERN.matcher("sof-dsk_deu");
-        m.find();
-        int i = m.start(GROUP_COLLISION);
-        String string = m.group(GROUP_COLLISION);
-        String xx = m.group(GROUP_PATH_SEGMENT);
-
-        i = m.start(GROUP_INDEX);
-        xx = m.group(GROUP_INDEX);
-
-        xx = m.group(GROUP_PATH_SEGMENT);
-
-        System.out.println("xx");
-    }
-  
-
 }

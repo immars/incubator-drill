@@ -206,7 +206,6 @@ public class JoinROP extends ROPBase<Join> {
                     }
                 });
 
-                //wcl
                 if (curIdx >= bufferLength) {
                     curIdx = 0;
                 }

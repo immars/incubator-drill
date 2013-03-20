@@ -15,20 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.apache.drill.common.logical.data;
+package org.apache.drill.exec.ref;
 
+public class Test {
 
-import org.apache.drill.common.expression.FieldReference;
-
-
-public class Distinct extends SingleInputOperator {
-  private FieldReference ref;
-
-  public Distinct(FieldReference ref) {
-    this.ref = ref;
-  }
-
-  public FieldReference getRef() {
-    return ref;
+  public static void main(String[] args) {
   }
 }

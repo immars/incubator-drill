@@ -6,7 +6,7 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -26,16 +26,14 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName("join")
 public class Join extends LogicalOperatorBase {
-//  private final LogicalOperator left;
-//  private final LogicalOperator right;
-    public  LogicalOperator left; //wcl
-    public  LogicalOperator right; //wcl
+  private LogicalOperator left;
+  private LogicalOperator right;
   private final JoinType type;
   private final JoinCondition[] conditions;
 
   public static enum JoinType{
     LEFT, INNER, OUTER;
-    
+
     public static JoinType resolve(String val){
       for(JoinType jt : JoinType.values()){
         if(jt.name().equalsIgnoreCase(val)) return jt;
@@ -43,7 +41,7 @@ public class Join extends LogicalOperatorBase {
       throw new ExpressionParsingException(String.format("Unable to determine join type for value '%s'.", val));
     }
   }
-  
+
   @JsonCreator
   public Join(@JsonProperty("left") LogicalOperator left, @JsonProperty("right") LogicalOperator right, @JsonProperty("conditions") JoinCondition[] conditions, @JsonProperty("type") String type) {
     super();
@@ -64,15 +62,15 @@ public class Join extends LogicalOperatorBase {
     return right;
   }
 
-    public void setLeft(LogicalOperator left){
-        this.left = left;
-        left.registerAsSubscriber(this);//wcl
-    }
+  public void setLeft(LogicalOperator left) {
+    this.left = left;
+    left.registerAsSubscriber(this);//wcl
+  }
 
-    public void setRight(LogicalOperator right){
-        this.right = right;
-        right.registerAsSubscriber(this);//wcl
-    }
+  public void setRight(LogicalOperator right) {
+    this.right = right;
+    right.registerAsSubscriber(this);//wcl
+  }
 
   public JoinCondition[] getConditions() {
     return conditions;
@@ -82,7 +80,7 @@ public class Join extends LogicalOperatorBase {
   public JoinType getJointType(){
     return type;
   }
-  
+
   public String getType(){
     return type.name();
   }

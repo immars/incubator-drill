@@ -68,45 +68,45 @@ public abstract class BaseSinkROP<T extends SinkOperator> extends SingleInputROP
     final int runsize = 100000;//wcl
     int recordCount = 0;
     OutcomeType outcome = OutcomeType.FAILED;
-    long pos = -1; 
-    try{
-        long xx=0;
-    while(true){
-      boolean more = true;
-      for(;recordCount < runsize; recordCount++){
-        NextOutcome r = iter.next();
-        if(r == NextOutcome.NONE_LEFT){
-          more = false;
-          break;
-        }else{
-          pos = sinkRecord(record);
+    long pos = -1;
+    try {
+      long xx = 0;
+      while (true) {
+        boolean more = true;
+        for (; recordCount < runsize; recordCount++) {
+          NextOutcome r = iter.next();
+          if (r == NextOutcome.NONE_LEFT) {
+            more = false;
+            break;
+          } else {
+            pos = sinkRecord(record);
             records.add(record.copy());
+          }
+        }
+        handle.progress(pos, recordCount);
+        if (!handle.okToContinue()) {
+          logger.debug("Told to cancel, breaking run.");
+          System.out.println("Told to cancel, breaking run.");
+          outcome = OutcomeType.CANCELED;
+          break;
+        } else if (!more) {
+          outcome = OutcomeType.SUCCESS;
+          logger.debug("Breaking because no more records were found.");
+          System.out.println("Breaking because no more records were found.");
+          break;
+        } else {
+          logger.debug("No problems, doing next progress iteration.");
+          System.out.println("No problems, doing next progress iteration.");
         }
       }
-      handle.progress(pos, recordCount);
-      if(!handle.okToContinue()){
-        logger.debug("Told to cancel, breaking run.");
-          System.out.println("Told to cancel, breaking run.");
-        outcome = OutcomeType.CANCELED;
-        break;
-      }else if(!more){
-        outcome = OutcomeType.SUCCESS;
-        logger.debug("Breaking because no more records were found.");
-          System.out.println("Breaking because no more records were found.");
-        break;
-      }else{
-        logger.debug("No problems, doing next progress iteration.");
-          System.out.println("No problems, doing next progress iteration.");
-      }
-    }
-    }catch(Exception e){
-        e.printStackTrace();
-        System.out.println(e.getMessage());
-      exception = e ;
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.out.println(e.getMessage());
+      exception = e;
     }
     cleanup(outcome);
     return new RunOutcome(outcome, pos, recordCount, exception);
-    
+
   }
 
     //wcl
