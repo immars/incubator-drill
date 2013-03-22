@@ -35,7 +35,8 @@ public class AggregationFunctions implements CallProvider {
         FunctionDefinition.aggregator("sum",  new AnyTypeAllowed(1), new OutputTypeDeterminer.SameAsFirstInput())
     };
   }
-    //wcl
+
+  //wcl
   public static FunctionDefinition getFunctionDefintion(String name){
 
     Map<String, Integer> funtionMap = new HashMap<String,Integer>();
