@@ -17,10 +17,7 @@
  ******************************************************************************/
 package org.apache.drill.common.physical.pop.base;
 
-import org.apache.drill.common.physical.pop.Filter;
-import org.apache.drill.common.physical.pop.PartitionToRandomExchange;
-import org.apache.drill.common.physical.pop.Project;
-import org.apache.drill.common.physical.pop.Sort;
+import org.apache.drill.common.physical.pop.*;
 
 public abstract class AbstractPhysicalVisitor<T, X, E extends Throwable> implements PhysicalVisitor<T, X, E> {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AbstractPhysicalVisitor.class);
@@ -43,6 +40,11 @@ public abstract class AbstractPhysicalVisitor<T, X, E extends Throwable> impleme
   @Override
   public T visitSort(Sort sort, X value) throws E{
     return visitUnknown(sort, value);
+  }
+
+  @Override
+  public T visitJoin(Join join, X value) throws E {
+    return visitUnknown(join, value);
   }
 
   @Override

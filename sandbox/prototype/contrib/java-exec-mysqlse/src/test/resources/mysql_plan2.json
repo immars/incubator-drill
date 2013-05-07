@@ -1,0 +1,61 @@
+{
+  head:{
+    type:"APACHE_DRILL_PHYSICAL",
+    version:"1",
+    generator:{
+      type:"manual",
+      info:"na"
+    }    
+  },
+  graph:[
+    {
+      @id:1,
+      pop:"scan-mysql",
+      entries:[
+        {id:0, location: "jdbc:mysql://localhost:3306/drilltest", tables: ["employee","department"], parent: 1},
+        {id:1, location: "jdbc:mysql://localhost:3306/drilltest2", tables: ["employee","department"], parent: 1}
+      ],
+      output: [ //todo: map column to outputs?
+              {mode: "VECTOR", type: "INT32"}, //field 0
+              {mode: "VECTOR", type: "BYTES"}, //field 1
+              {mode: "VECTOR", type: "BYTES"} //field 2
+      ],
+      ops:[
+
+        {
+          @id:5,
+          child:1,
+          pop:"filter",
+          expr: "id==16"
+        },
+        {
+          @id: 6,
+          pop: "join",
+          type: "INNER",
+          left: 5,
+          right: 1,
+          conditions:[{
+            relationship: "==",
+            left: "employee.deptId",
+            right: "department.id"
+          }]
+        },
+        {
+          @id: 4,
+          child: 1,
+          pop:"project",
+          exprs: [
+            { ref: "output.dept_name", expr: "department.name"},
+            { ref: "output.guy_name", expr: "employee.name"},
+            { ref: "output.guy_salary", expr: "employee.salary"}
+          ]     
+        }
+      ]
+    },
+    {
+      @id:10,
+      child:1,
+      pop:"log-store"
+    }
+  ]
+}

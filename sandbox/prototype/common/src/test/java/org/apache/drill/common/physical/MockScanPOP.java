@@ -35,8 +35,7 @@ public class MockScanPOP extends AbstractScan<MockScanPOP.MockScanEntry>{
   private final String url;
   
   @JsonCreator
-  public MockScanPOP(@JsonProperty("url") String url, @JsonProperty("entries") List<MockScanEntry> readEntries) {
-    super(readEntries);
+  public MockScanPOP(@JsonProperty("url") String url) {
     this.url = url;
   }
   

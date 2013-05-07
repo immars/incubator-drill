@@ -21,6 +21,8 @@ import org.apache.drill.exec.exception.ExecutionSetupException;
 import org.apache.drill.exec.ops.OutputMutator;
 import org.apache.drill.exec.record.BatchSchema;
 
+import java.sql.SQLException;
+
 public interface RecordReader {
 
   /**
@@ -42,7 +44,7 @@ public interface RecordReader {
    * 
    * @return The number of additional records added to the output.
    */
-  public abstract int next();
+  public abstract int next() throws Exception;
 
   public abstract void cleanup();
 

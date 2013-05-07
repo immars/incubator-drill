@@ -46,7 +46,10 @@ public class FieldSet {
   public FieldSet(Iterable<RecordField> fields){
     this.fields = Lists.newArrayList(fields);
   }
-  
+
+  public List<RecordField> getFields() {
+    return fields;
+  }
 
   public static class De extends StdDeserializer<FieldSet> {
     

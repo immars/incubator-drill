@@ -6,57 +6,41 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.apache.drill.common.physical.pop.base;
+package org.apache.drill.storage;
 
-import java.util.Iterator;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.drill.common.physical.MySQLScanPOP;
+import org.apache.drill.exec.store.StorageEngine;
+
 import java.util.List;
 
-import org.apache.drill.common.physical.ReadEntry;
-import org.apache.drill.common.proto.CoordinationProtos.DrillbitEndpoint;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Iterators;
-
-public abstract class AbstractScan<R extends ReadEntry> extends AbstractBase implements Scan<R>{
-  static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AbstractScan.class);
+public class MySQLSEReadEntry implements StorageEngine.ReadEntry {
   
-  @JsonProperty("entries")
-  public List<R> readEntries;
-  
-  public AbstractScan() {
+  public int id;
+  public String location;
+  public List<String> tables;  
+  public MySQLScanPOP parent;
+
+  @JsonCreator
+  public MySQLSEReadEntry(@JsonProperty("id") int id,@JsonProperty("location") String location,@JsonProperty("tables") List<String> tables,@JsonProperty("parent") MySQLScanPOP parent) {
+    this.id = id;
+    this.location = location;
+    this.tables = tables;
+    this.parent = parent;
   }
 
   @Override
-  @JsonProperty("entries")
-  public List<R> getReadEntries() {
-    return readEntries;
+  public StorageEngine.Cost getCostEstimate() {
+    return null;  //TODO method implementation
   }
-  
-  @Override
-  public Iterator<PhysicalOperator> iterator() {
-    return Iterators.emptyIterator();
-  }
-
-  @Override
-  public boolean isExecutable() {
-    return true;
-  }
-
-  @Override
-  public <T, X, E extends Throwable> T accept(PhysicalVisitor<T, X, E> physicalVisitor, X value) throws E{
-    return physicalVisitor.visitScan(this, value);
-  }
-  
-  
-  
-  
 }
