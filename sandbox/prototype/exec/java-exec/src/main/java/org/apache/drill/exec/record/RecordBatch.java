@@ -80,6 +80,6 @@ public interface RecordBatch {
    * 
    * @return An IterOutcome describing the result of the iteration.
    */
-  public IterOutcome next();
+  public IterOutcome next() throws Exception;
 
 }

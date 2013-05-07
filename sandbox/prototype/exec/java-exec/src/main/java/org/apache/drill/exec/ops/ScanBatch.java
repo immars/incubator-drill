@@ -106,7 +106,7 @@ public abstract class ScanBatch implements RecordBatch {
   }
 
   @Override
-  public IterOutcome next() {
+  public IterOutcome next() throws Exception {
     while ((recordCount = currentReader.next()) == 0) {
       try {
         if (!readers.hasNext()) {

@@ -73,7 +73,7 @@ public abstract class FilterRecordBatch implements RecordBatch {
   }
 
   @Override
-  public IterOutcome next() {
+  public IterOutcome next() throws Exception {
     while (true) {
       IterOutcome o = incoming.next();
       switch (o) {
