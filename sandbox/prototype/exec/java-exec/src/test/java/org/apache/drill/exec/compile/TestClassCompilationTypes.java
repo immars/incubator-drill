@@ -20,14 +20,16 @@ package org.apache.drill.exec.compile;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.jdk.ExpressionEvaluator;
-import org.codehaus.commons.compiler.jdk.SimpleCompiler;
+import org.codehaus.janino.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 public class TestClassCompilationTypes {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TestClassCompilationTypes.class);
@@ -53,15 +55,52 @@ public class TestClassCompilationTypes {
     IExpressionEvaluator eeJanino = compileJanino();
     IExpressionEvaluator eeJDK = compileJDK();
     DirectIntegerEvaluate eeDirect = compileDirect();
+    DirectIntegerEvaluate eeDBody = compileDirectBody();
     benchmarkEvaluator(eeJanino); // warm up
     benchmarkDirectEvaluator(eeDirect); // warm up
-    long janinoT = benchmarkEvaluator(eeJanino)/1000;
-    long jdkT = benchmarkEvaluator(eeJDK)/1000;
-    long directT = benchmarkDirectEvaluator(eeDirect)/1000;
+    long janinoT = benchmarkEvaluator(eeJanino);
+    long jdkT = benchmarkEvaluator(eeJDK);
+    long directT = benchmarkDirectEvaluator(eeDirect);
+    long dbodyT = benchmarkDirectEvaluator(eeDBody);
     
-    System.out.println("Janino: " + janinoT + " micros.  JDK: " + jdkT + " micros. Direct: " + directT + " micros.");
+    System.out.println("Evaluate Janino: " + janinoT/1000 + " micros.  " +
+      "JDK: " + jdkT/1000 + " micros. " +
+      "Direct: " + directT/1000 + " micros. " +
+      "DBody: " + dbodyT/1000 + " micros.");    
 
   }
+  
+  @Test
+  public void compareCompiles() throws Exception{
+    for (int i = 0; i < 100; i++) {
+      compileJanino();
+      compileJDK();
+      compileDirect();
+      compileDirectBody();
+    }
+    long janinoT = 0l, jdkT = 0l, directT = 0l, dbodyT = 0l;
+    for (int i = 0; i < 100; i++) {
+      long n1 = System.nanoTime();
+      compileJanino();
+      long n2 = System.nanoTime();
+      compileJDK();
+      long n3 = System.nanoTime();
+      compileDirect();
+      long n4 = System.nanoTime();
+      compileDirectBody();
+      long n5 = System.nanoTime();      
+      janinoT = n2 - n1;
+      jdkT = n3 - n2;
+      directT = n4 - n3;
+      dbodyT = n5 - n4;
+      System.out.println("Compile Janino: " + janinoT/1000 + " micros.  " +
+        "JDK: " + jdkT/1000 + " micros. " +
+        "Direct: " + directT/1000 + " micros. " +
+        "DBody: " + dbodyT/1000 + " micros.");    
+    }
+    
+  }
+  
   private long benchmarkDirectEvaluator(DirectIntegerEvaluate ee) throws InvocationTargetException {
     long t = System.nanoTime();
     for(int i =0; i < 500; i++){
@@ -99,7 +138,12 @@ public class TestClassCompilationTypes {
   }
   
   private DirectIntegerEvaluate compileDirect() throws CompileException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-    DirectExpressionEvaluator<DirectIntegerEvaluate> eval = new DirectExpressionEvaluator<DirectIntegerEvaluate>(DirectIntegerEvaluate.class, "c > d ? c:d");
+    SimpleCompilerEvaluatorBuilder<DirectIntegerEvaluate> eval = new SimpleCompilerEvaluatorBuilder<DirectIntegerEvaluate>(DirectIntegerEvaluate.class, "c > d ? c:d");
+    return eval.getInstance();
+  }
+  
+  private DirectIntegerEvaluate compileDirectBody() throws CompileException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    IDirectEvaluatorBuilder<DirectIntegerEvaluate> eval = new ClassBodyEvaluatorBuilder("c > d ? c:d");
     return eval.getInstance();
   }
   
@@ -123,26 +167,81 @@ public class TestClassCompilationTypes {
     int evaluate(int c, int d);
   }
   
-  public static class DirectExpressionEvaluator<T>{
+  public static interface IDirectEvaluatorBuilder<T> {
+    T getInstance() throws IllegalAccessException, InstantiationException;
+  }
+  
+  public static class SimpleCompilerEvaluatorBuilder<T> implements IDirectEvaluatorBuilder<T> {
 
     private final String eval;
     private final Class<T> evaluatorClass;
     private final ISimpleCompiler compiler;
     private final Class<T> implementorClass;
-    public DirectExpressionEvaluator(Class<T> clz, String eval) throws IOException, CompileException, ClassNotFoundException {
+    public SimpleCompilerEvaluatorBuilder(Class<T> clz, String eval) throws IOException, CompileException, ClassNotFoundException {
       this.eval = eval;
       this.evaluatorClass = clz;
-      compiler = new SimpleCompiler();
+      compiler = new org.codehaus.janino.SimpleCompiler();
       String className = "Eval"+System.currentTimeMillis();
       compiler.cook(new StringReader("package my.pkg;\n" +
         "public class "+className+" implements org.apache.drill.exec.compile.TestClassCompilationTypes.DirectIntegerEvaluate{\n" +
         " public int evaluate(int c, int d){ return "+eval+";}}"));
-      implementorClass = (Class<T>) compiler.getClassLoader().loadClass("my.pkg."+className);
+      implementorClass = (Class<T>) compiler.getClassLoader().loadClass("my.pkg." + className);
       
     }
     
+    @Override
     public T getInstance() throws IllegalAccessException, InstantiationException {
       return (T) implementorClass.newInstance();
     }
   }
+  
+  public static class ClassBodyEvaluatorBuilder implements IDirectEvaluatorBuilder<DirectIntegerEvaluate> {
+
+    private final String eval;
+    private final MySimpleCompiler compiler;
+    private final Class<DirectIntegerEvaluate> implementorClass;
+    public ClassBodyEvaluatorBuilder(String eval) throws IOException, CompileException, ClassNotFoundException {
+      this.eval = eval;
+      compiler = new MySimpleCompiler();
+      String className = "Eval"+System.currentTimeMillis();      
+      implementorClass = compiler.cook(eval, DirectIntegerEvaluate.class, className);
+    }
+
+    @Override
+    public DirectIntegerEvaluate getInstance() throws IllegalAccessException, InstantiationException {
+      return implementorClass.newInstance();
+    }
+
+  }
+  
+  public static class MySimpleCompiler extends ScriptEvaluator{
+    public Class cook(String eval, Class clz, String className) throws CompileException, IOException {
+      Java.CompilationUnit unit = new Java.CompilationUnit(null);
+      this.setClassName(className);      
+      this.setImplementedInterfaces(new Class[]{DirectIntegerEvaluate.class});
+
+      this.setUpClassLoaders();
+      Java.ClassDeclaration pmcd = this.addPackageMemberClassDeclaration(Location.NOWHERE, unit);
+      
+      List statements = this.makeStatements(0,new Scanner(null, new StringReader("return "+eval+";")));
+      pmcd.addDeclaredMethod(this.makeMethodDeclaration(
+        Location.NOWHERE,
+        false,
+        int.class,
+        "evaluate",
+        new Class[]{int.class, int.class},
+        new String[]{"c", "d"},
+        new Class[0],
+        statements
+      ));
+      return this.compileToClass(unit, className);
+    }
+  }
+
+  static class MyClassEvaluator extends ClassBodyEvaluator{
+    public Class cook(Java.CompilationUnit unit, String newClassName) throws CompileException {
+      return compileToClass(unit, newClassName);
+    }
+  }
+  
 }
